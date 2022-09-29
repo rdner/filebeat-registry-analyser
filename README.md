@@ -22,7 +22,7 @@ If you have multiple files (for example, from multiple Filebeat containers) you 
 ## Example
 
 ```sh
-./regan log-*.json
+./bin/regan log-*.json
 2022/09/29 13:33:51 Given 2 files: log-8.3.3.json, log-8.4.1.json
 2022/09/29 13:33:51 Starting analysis with 2 workers...
 2022/09/29 13:33:51 Reading from log-8.3.3.json...
