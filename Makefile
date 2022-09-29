@@ -5,5 +5,5 @@ bin/regan: build
 
 .PHONY: build
 build:
-	echo "Building ${BINARY_NAME}..."
+	@echo "Building ${BINARY_NAME}..."
 	@go build -o ${BINARY_NAME} ${REPO}
