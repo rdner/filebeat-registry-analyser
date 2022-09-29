@@ -32,7 +32,7 @@ type record struct {
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Printf("No filename specified, exiting.\n\n")
-		fmt.Printf("Filebeat registry log analyser.\nThe tool will scan the Filebeat registry logs and report suspicious facts. You can specifiy multiple registry log files and the tool will concatenate them.\n\n")
+		fmt.Printf("Filebeat registry log analyser.\nThe tool will scan the Filebeat registry logs and report suspicious facts. You can specify multiple registry log files and the tool will concatenate them.\n\n")
 
 		fmt.Println("Usage:\t\tregan [file ...]")
 		fmt.Println("Example:\tregan log1.json log2.json log3.json")
@@ -52,8 +52,8 @@ func main() {
 }
 
 func analyse(filenames []string, workers int, buffer int) {
-	records := make(chan record, buffer)
-	files := make(chan string)
+	recordsCh := make(chan record, buffer)
+	filenamesCh := make(chan string)
 	var wg sync.WaitGroup
 
 	// workers for reading files
@@ -61,7 +61,7 @@ func analyse(filenames []string, workers int, buffer int) {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			err := worker(files, records)
+			err := worker(filenamesCh, recordsCh)
 			if err != nil {
 				log.Fatal(err)
 			}
@@ -71,9 +71,9 @@ func analyse(filenames []string, workers int, buffer int) {
 	occurances := make(map[string]map[string]struct{})
 	var recordCount int
 
-	// worker for consuming records and organising them in a datastructure
+	// worker for consuming records and organizing them in a data structure
 	go func() {
-		for record := range records {
+		for record := range recordsCh {
 			recordCount++
 			if _, ok := occurances[record.Value.Meta.Source]; !ok {
 				occurances[record.Value.Meta.Source] = make(map[string]struct{})
@@ -83,12 +83,12 @@ func analyse(filenames []string, workers int, buffer int) {
 	}()
 
 	for _, filename := range filenames {
-		files <- filename
+		filenamesCh <- filename
 	}
-	close(files)
+	close(filenamesCh)
 
 	wg.Wait()
-	close(records)
+	close(recordsCh)
 
 	log.Printf("Found %d records in %d files", recordCount, len(filenames))
 	log.Printf("Found %d unique files in the log", len(occurances))
@@ -113,10 +113,10 @@ func analyse(filenames []string, workers int, buffer int) {
 	log.Printf("Analysis is complete, %d fact(s) reported", reported)
 }
 
-func worker(filenames <-chan string, records chan<- record) error {
-	for filename := range filenames {
+func worker(filenamesCh <-chan string, recordsCh chan<- record) error {
+	for filename := range filenamesCh {
 		log.Printf("Reading from %s...", filename)
-		err := readRegistry(filename, records)
+		err := readRegistry(filename, recordsCh)
 		if err != nil {
 			return fmt.Errorf("failed to read records from %s: %w", filename, err)
 		}
@@ -125,7 +125,7 @@ func worker(filenames <-chan string, records chan<- record) error {
 	return nil
 }
 
-func readRegistry(filename string, results chan<- record) error {
+func readRegistry(filename string, recordsCh chan<- record) error {
 	file, err := os.Open(filename)
 	if err != nil {
 		return fmt.Errorf("failed to open a file %s: %w", filename, err)
@@ -146,6 +146,6 @@ func readRegistry(filename string, results chan<- record) error {
 		if next.Key == "" {
 			continue
 		}
-		results <- next
+		recordsCh <- next
 	}
 }

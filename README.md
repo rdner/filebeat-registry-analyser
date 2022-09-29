@@ -9,15 +9,15 @@ The tool is able to analyse the [Filebeat registry logs](https://www.elastic.co/
 
 # Installation
 
-You need to have [Go](https://go.dev/learn/) installed on your machine.
+Just download a binary from the latest release (according to your OS and CPU architecture).
 
-To build the binary from the repository use `make` in the root of the project.
+To build the binary from the repository use `make` in the root of the project. You'll need to have [Go](https://go.dev/learn/) installed on your machine.
 
 # Usage
 
 The Filebeat registry log file can be usually found in `/usr/share/filebeat/data/registry/filebeat/log.json`.
 
-If you have multiple files (for example, from multiple Filebeat containers) you can run the tool with multiple filenames. Then the logs will be concatinated and treated as one.
+If you have multiple files (for example, from multiple Filebeat containers) you can run the tool with multiple filenames. Then the logs will be concatenated and treated as one.
 
 ## Example
 
