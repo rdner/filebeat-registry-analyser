@@ -17,11 +17,14 @@ const (
 )
 
 type meta struct {
+	// filestream has the source field in the record metadata.
 	Source string `json:"source"`
 }
 
 type value struct {
 	Meta meta `json:"meta"`
+	// log input has the source file in the value itself.
+	Source string `json:"source"`
 }
 
 type record struct {
@@ -75,10 +78,21 @@ func analyse(filenames []string, workers int, buffer int) {
 	go func() {
 		for record := range recordsCh {
 			recordCount++
-			if _, ok := occurances[record.Value.Meta.Source]; !ok {
-				occurances[record.Value.Meta.Source] = make(map[string]struct{})
+			// assume filestream
+			source := record.Value.Meta.Source
+			// or log input
+			if source == "" {
+				source = record.Value.Source
 			}
-			occurances[record.Value.Meta.Source][record.Key] = struct{}{}
+			// incorrect data
+			if source == "" {
+				log.Println("found an incompatible record without a source file")
+				continue
+			}
+			if _, ok := occurances[source]; !ok {
+				occurances[source] = make(map[string]struct{})
+			}
+			occurances[source][record.Key] = struct{}{}
 		}
 	}()
 

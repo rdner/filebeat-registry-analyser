@@ -2,7 +2,7 @@
 
 This tool is created for the purpose of debugging issues with [Elastic Filebeat](https://www.elastic.co/beats/filebeat).
 
-The tool is able to analyse the [Filebeat registry logs](https://www.elastic.co/guide/en/beats/filebeat/current/how-filebeat-works.html#_how_does_filebeat_keep_the_state_of_files) and find suspicious records like:
+The tool is able to analyse the [Filebeat registry logs](https://www.elastic.co/guide/en/beats/filebeat/current/how-filebeat-works.html#_how_does_filebeat_keep_the_state_of_files) (Filestream and Log input) and find suspicious records like:
 
 * a changed [inode](https://en.wikipedia.org/wiki/Inode) for a file with the same filename. This might happen because of certain log rotation strategies or if a target file is on a network share.
 * ... (something might come later)
