@@ -29,7 +29,7 @@ type value struct {
 
 type record struct {
 	Key   string `json:"k"`
-	Value value  `json:"v"`
+	Value *value `json:"v"`
 }
 
 func main() {
@@ -86,7 +86,7 @@ func analyse(filenames []string, workers int, buffer int) {
 			}
 			// incorrect data
 			if source == "" {
-				log.Println("found an incompatible record without a source file")
+				log.Printf("found an incompatible record without a source file: %+v\n", record)
 				continue
 			}
 			if _, ok := occurances[source]; !ok {
@@ -160,6 +160,11 @@ func readRegistry(filename string, recordsCh chan<- record) error {
 		if next.Key == "" {
 			continue
 		}
+		// it's a `remove` record
+		if next.Value == nil {
+			continue
+		}
+
 		recordsCh <- next
 	}
 }
